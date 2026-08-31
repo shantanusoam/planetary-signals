@@ -11,7 +11,16 @@ test("source registry is broad, unique, and traceable", () => {
   assert.equal(new Set(SOURCE_REGISTRY.map((source) => source.id)).size, SOURCE_REGISTRY.length);
   assert.ok(SOURCE_REGISTRY.every((source) => source.url.startsWith("https://")));
   assert.ok(SOURCE_REGISTRY.every((source) => source.license.length > 2));
-  assert.ok(SOURCE_REGISTRY.filter((source) => source.integration === "connected").length >= 12);
+  assert.ok(SOURCE_REGISTRY.filter((source) => source.integration === "connected").length >= 16);
+  const credentialReady = SOURCE_REGISTRY.filter(
+    (source) => source.integration === "credential-ready",
+  );
+  assert.ok(credentialReady.length >= 3);
+  assert.ok(
+    credentialReady.every(
+      (source) => source.implementation && source.requiredEnv?.length,
+    ),
+  );
 });
 
 test("every signal category has interface metadata", () => {
@@ -55,6 +64,15 @@ test("every connected source is represented by a server adapter or probe", async
     .map((source) => source.id);
   assert.deepEqual(missing, []);
   assert.match(probeRoute, /api\.open-meteo\.com/);
+
+  const missingCredentialAdapters = SOURCE_REGISTRY
+    .filter((source) => source.integration === "credential-ready")
+    .filter((source) => !implementation.includes(source.id))
+    .map((source) => source.id);
+  assert.deepEqual(missingCredentialAdapters, []);
+  assert.match(signalsRoute, /state: "unconfigured"/);
+  assert.match(signalsRoute, /latest-continuous\/items\?f=json&limit=60&datetime=\$\{dateQuery\}/);
+  assert.doesNotMatch(signalsRoute, /datetime=PT6H/);
 });
 
 test("built application serves project metadata and validates probe coordinates", async () => {

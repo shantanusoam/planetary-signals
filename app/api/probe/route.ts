@@ -12,7 +12,7 @@ function value(value: unknown) {
     : null;
 }
 
-async function getJson(url: string, timeoutMs = 5_000) {
+async function getJson(url: string, timeoutMs = 5_000, headers: HeadersInit = {}) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -20,6 +20,7 @@ async function getJson(url: string, timeoutMs = 5_000) {
       headers: {
         Accept: "application/json",
         "User-Agent": "PlanetarySignals/1.0 (open-source planetary data interface)",
+        ...headers,
       },
       signal: controller.signal,
     });
@@ -30,11 +31,17 @@ async function getJson(url: string, timeoutMs = 5_000) {
   }
 }
 
-async function optionalSource(name: string, url: string) {
+async function optionalSource(
+  sourceId: string,
+  name: string,
+  url: string,
+  headers: HeadersInit = {},
+) {
   const started = Date.now();
   try {
-    const payload = await getJson(url);
+    const payload = await getJson(url, 5_000, headers);
     return {
+      sourceId,
       name,
       state: "online" as const,
       latencyMs: Date.now() - started,
@@ -43,6 +50,7 @@ async function optionalSource(name: string, url: string) {
     };
   } catch (error) {
     return {
+      sourceId,
       name,
       state: "offline" as const,
       latencyMs: Date.now() - started,
@@ -50,6 +58,22 @@ async function optionalSource(name: string, url: string) {
       error: error instanceof Error ? error.message : "Unavailable",
     };
   }
+}
+
+function unconfiguredSource(sourceId: string, name: string, requiredEnv: string) {
+  return Promise.resolve({
+    sourceId,
+    name,
+    state: "unconfigured" as const,
+    latencyMs: 0,
+    payload: null,
+    error: `${requiredEnv} is not configured`,
+  });
+}
+
+function numericValue(input: unknown) {
+  const parsed = typeof input === "number" ? input : Number(input);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 export async function GET(request: Request) {
@@ -65,23 +89,42 @@ export async function GET(request: Request) {
   }
 
   const coordinates = `latitude=${latitude.toFixed(4)}&longitude=${longitude.toFixed(4)}`;
-  const [forecast, air, marine, place] = await Promise.all([
+  const topographyKey =
+    typeof process === "undefined"
+      ? undefined
+      : process.env.OPENTOPOGRAPHY_API_KEY?.trim() || undefined;
+  const [forecast, air, marine, place, terrain] = await Promise.all([
     optionalSource(
+      "open-meteo",
       "Open-Meteo Forecast",
       `https://api.open-meteo.com/v1/forecast?${coordinates}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,wind_direction_10m&daily=sunrise,sunset&timezone=auto&forecast_days=1`,
     ),
     optionalSource(
+      "open-meteo",
       "Open-Meteo Air Quality",
       `https://air-quality-api.open-meteo.com/v1/air-quality?${coordinates}&current=pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,sulphur_dioxide,ozone,us_aqi,european_aqi&timezone=auto`,
     ),
     optionalSource(
+      "open-meteo",
       "Open-Meteo Marine",
       `https://marine-api.open-meteo.com/v1/marine?${coordinates}&current=wave_height,wave_direction,wave_period,wind_wave_height,swell_wave_height,sea_surface_temperature&timezone=auto`,
     ),
     optionalSource(
+      "openstreetmap",
       "OpenStreetMap Nominatim",
       `https://nominatim.openstreetmap.org/reverse?lat=${latitude.toFixed(5)}&lon=${longitude.toFixed(5)}&format=jsonv2&zoom=7&addressdetails=1`,
     ),
+    topographyKey
+      ? optionalSource(
+          "open-topography",
+          "OpenTopography Terrain",
+          `https://portal.opentopography.org/API/v1/elevation?longitude=${longitude.toFixed(5)}&latitude=${latitude.toFixed(5)}&dataset=COP30&API_Key=${encodeURIComponent(topographyKey)}`,
+        )
+      : unconfiguredSource(
+          "open-topography",
+          "OpenTopography Terrain",
+          "OPENTOPOGRAPHY_API_KEY",
+        ),
   ]);
 
   const forecastPayload = record(forecast.payload);
@@ -95,6 +138,8 @@ export async function GET(request: Request) {
   const marineCurrent = record(marinePayload.current);
   const marineUnits = record(marinePayload.current_units);
   const placePayload = record(place.payload);
+  const terrainPayload = record(terrain.payload);
+  const terrainData = record(terrainPayload.data);
   const address = record(placePayload.address);
 
   const response = {
@@ -160,7 +205,22 @@ export async function GET(request: Request) {
           },
         }
       : null,
-    sources: [forecast, air, marine, place].map(({ name, state, latencyMs, error }) => ({
+    terrain: terrain.payload
+      ? {
+          elevation:
+            numericValue(terrainPayload.elevation) ??
+            numericValue(terrainData.elevation) ??
+            numericValue(terrainPayload.value),
+          unit: value(terrainPayload.unit) ?? value(terrainData.unit) ?? "m",
+          dataset: value(terrainPayload.dataset) ?? value(terrainData.dataset) ?? "COP30",
+          verticalDatum:
+            value(terrainPayload.verticalDatum) ??
+            value(terrainPayload.vertical_datum) ??
+            value(terrainData.verticalDatum),
+        }
+      : null,
+    sources: [forecast, air, marine, place, terrain].map(({ sourceId, name, state, latencyMs, error }) => ({
+      sourceId,
       name,
       state,
       latencyMs,

@@ -33,6 +33,7 @@ Domain-specific values stay inside `metadata`. The gateway does not pretend eart
 | Every adapter responds | `mode: live` |
 | At least one adapter fails | `mode: partial`; successful records remain live |
 | All adapters fail | `mode: sample`; clearly labeled demonstration records render |
+| Implemented adapter has no required credential | `state: unconfigured`; it is excluded from live/partial failure math |
 | One probe source fails | Other probe domains remain visible and the source strip marks it offline |
 | Invalid coordinates | `400` before any upstream request |
 
