@@ -33,7 +33,7 @@ export interface PlanetarySignal {
 
 export interface AdapterStatus {
   sourceId: string;
-  state: "online" | "degraded" | "offline";
+  state: "online" | "degraded" | "offline" | "unconfigured";
   records: number;
   latencyMs: number;
   checkedAt: string;
@@ -67,7 +67,9 @@ export interface SourceRegistryEntry {
   cadence: SignalFreshness;
   coverage: string;
   license: string;
-  integration: "connected" | "catalogued" | "key-needed";
+  integration: "connected" | "credential-ready" | "catalogued" | "key-needed";
+  implementation?: "event" | "probe" | "raster" | "batch";
+  requiredEnv?: string[];
   url: string;
   description: string;
 }

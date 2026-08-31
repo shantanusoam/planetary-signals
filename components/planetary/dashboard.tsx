@@ -80,6 +80,7 @@ const domainColors: Record<SourceRegistryEntry["domain"], string> = {
 
 const integrationLabels = {
   connected: "Live adapter",
+  "credential-ready": "Credential ready",
   catalogued: "Registry ready",
   "key-needed": "Key / account",
 } as const;
@@ -132,7 +133,19 @@ interface ProbeResponse {
     seaSurfaceTemperature: number | null;
     units: Record<string, string | null>;
   };
-  sources: Array<{ name: string; state: "online" | "offline"; latencyMs: number; error: string | null }>;
+  terrain: null | {
+    elevation: number | null;
+    unit: string | null;
+    dataset: string | null;
+    verticalDatum: string | null;
+  };
+  sources: Array<{
+    sourceId: string;
+    name: string;
+    state: "online" | "offline" | "unconfigured";
+    latencyMs: number;
+    error: string | null;
+  }>;
 }
 
 export function PlanetaryDashboard({ initialData }: PlanetaryDashboardProps) {
@@ -225,6 +238,12 @@ export function PlanetaryDashboard({ initialData }: PlanetaryDashboardProps) {
   );
 
   const onlineAdapters = data.adapters.filter((adapter) => adapter.state === "online");
+  const configuredAdapters = data.adapters.filter(
+    (adapter) => adapter.state !== "unconfigured",
+  );
+  const readyAdapters = data.adapters.filter(
+    (adapter) => adapter.state === "unconfigured",
+  );
   const mappedCount = filteredSignals.filter(
     (signal) => signal.latitude !== undefined && signal.longitude !== undefined,
   ).length;
@@ -313,7 +332,7 @@ export function PlanetaryDashboard({ initialData }: PlanetaryDashboardProps) {
 
             <section className="telemetry-strip" aria-label="Live telemetry summary">
               <TelemetryMetric icon={Radio} label="Visible signals" value={formatNumber(filteredSignals.length)} detail={`${mappedCount} geolocated`} />
-              <TelemetryMetric icon={Zap} label="Adapters online" value={`${onlineAdapters.length}/${data.adapters.length}`} detail={data.mode === "live" ? "full mesh" : "graceful fallback"} />
+              <TelemetryMetric icon={Zap} label="Adapters online" value={`${onlineAdapters.length}/${configuredAdapters.length}`} detail={readyAdapters.length ? `${readyAdapters.length} await credentials` : data.mode === "live" ? "full mesh" : "graceful fallback"} />
               <TelemetryMetric icon={Gauge} label="Median response" value={medianLatency ? `${medianLatency} ms` : "—"} detail="last gateway pulse" />
               <TelemetryMetric icon={Activity} label="Newest observation" value={newestSignal ? relativeTime(newestSignal.observedAt) : "—"} detail={newestSignal?.sourceId ?? "waiting"} />
             </section>
@@ -497,7 +516,7 @@ export function PlanetaryDashboard({ initialData }: PlanetaryDashboardProps) {
               </div>
               <div className="atlas-stats">
                 <div><strong>{SOURCE_REGISTRY.filter((source) => source.integration === "connected").length}</strong><span>connected</span></div>
-                <div><strong>{new Set(SOURCE_REGISTRY.map((source) => source.protocol.split(" /")[0])).size}</strong><span>protocol families</span></div>
+                <div><strong>{SOURCE_REGISTRY.filter((source) => source.integration === "credential-ready").length}</strong><span>credential ready</span></div>
                 <div><strong>{new Set(SOURCE_REGISTRY.map((source) => source.domain)).size}</strong><span>signal domains</span></div>
               </div>
             </section>
@@ -528,7 +547,7 @@ export function PlanetaryDashboard({ initialData }: PlanetaryDashboardProps) {
                 )}
               </label>
               <div className="registry-filters" aria-label="Filter source integrations">
-                {(["all", "connected", "catalogued", "key-needed"] as const).map((filter) => (
+                {(["all", "connected", "credential-ready", "catalogued", "key-needed"] as const).map((filter) => (
                   <button
                     type="button"
                     key={filter}
@@ -662,6 +681,7 @@ function ProbeCard({
   const weather = data?.weather;
   const air = data?.air;
   const marine = data?.marine;
+  const terrain = data?.terrain;
   const title = data?.location.label ?? coordinateLabel(point.latitude, point.longitude);
   return (
     <article className="probe-card">
@@ -678,8 +698,8 @@ function ProbeCard({
       {loading && (
         <div className="probe-loading" role="status">
           <span><i /><i /><i /></span>
-          <strong>Combining four open data services</strong>
-          <small>Forecast · air quality · marine · place</small>
+          <strong>Combining local open data</strong>
+          <small>Forecast · air · marine · place · optional terrain</small>
         </div>
       )}
 
@@ -734,6 +754,12 @@ function ProbeCard({
           </div>
 
           <div className="probe-sun">
+            {terrain?.elevation !== null && terrain?.elevation !== undefined && (
+              <>
+                <span><MapPinned /> {metric(terrain.elevation, terrain.unit)}</span>
+                <i />
+              </>
+            )}
             <span><Sunrise /> {clockTime(weather?.sunrise)}</span>
             <i />
             <span><Sunset /> {clockTime(weather?.sunset)}</span>
@@ -762,13 +788,18 @@ function SourceCard({ source }: { source: SourceRegistryEntry }) {
         </span>
         <span className={`integration-chip ${source.integration}`}>
           {source.integration === "connected" && <Check />}
-          {source.integration === "key-needed" && <Zap />}
+          {(source.integration === "key-needed" || source.integration === "credential-ready") && <Zap />}
           {integrationLabels[source.integration]}
         </span>
       </div>
       <h2>{source.name}</h2>
       <span className="source-provider">{source.provider}</span>
       <p>{source.description}</p>
+      {source.requiredEnv?.length ? (
+        <span className="source-requirement">
+          <Zap /> Set {source.requiredEnv.join(" + ")}
+        </span>
+      ) : null}
       <dl>
         <div><dt>Protocol</dt><dd>{source.protocol}</dd></div>
         <div><dt>Cadence</dt><dd>{source.cadence}</dd></div>

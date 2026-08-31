@@ -9,7 +9,8 @@ Planetary Signals turns fragmented public data into one explorable field: earthq
 ## What is working
 
 - Interactive global map with clustering, eight switchable signal layers and a chronological field log.
-- Twelve server-side live adapters with independent timeouts and health states.
+- Sixteen no-key server-side live adapters with independent timeouts and health states.
+- Credential-ready OpenAQ, eBird and OpenTopography adapters that report `unconfigured` until their server-side keys are supplied.
 - Click-anywhere planet probe combining local weather, air quality, marine conditions and reverse geocoding.
 - Searchable source atlas covering 51 public planetary data systems across eight domains.
 - Source-level provenance, original-record links, freshness badges and verified/reported/modeled quality.
@@ -26,7 +27,11 @@ Planetary Signals turns fragmented public data into one explorable field: earthq
 | Occurrence API | GBIF | Geolocated terrestrial biodiversity observations |
 | Observations API | iNaturalist | Recent research-grade citizen observations |
 | Occurrence API | OBIS | Marine biodiversity records |
+| Latest observations | NOAA NDBC | Buoy wind, waves, pressure and temperature |
+| Water Data OGC API | USGS | Recent continuous river-discharge observations |
 | GOES X-ray JSON | NOAA SWPC | Near-live solar X-ray flux |
+| DONKI web service | NASA CCMC | Recent solar flares and active regions |
+| Close Approach API | NASA JPL CNEOS | Predicted near-Earth object approaches |
 | Disasters API | UN OCHA ReliefWeb | Curated humanitarian disaster records |
 | Common Metadata Repository | NASA Earthdata | Recently updated Earth science collections |
 | Works API | OpenAlex | Recent planetary and climate research |
@@ -38,7 +43,7 @@ Planetary Signals turns fragmented public data into one explorable field: earthq
 | Reverse API | OpenStreetMap Nominatim | Human-readable location context |
 | Raster tiles | OpenStreetMap + CARTO | Map context and place labels |
 
-The Source Atlas additionally records high-value systems that require a key, registration, a domain-specific client or a heavier raster pipeline. `connected` means the current application calls it; `catalogued` means its integration contract is recorded; `key-needed` means credentials or registration must stay server-side.
+The Source Atlas additionally records high-value systems that require a key, registration, a domain-specific client or a heavier raster pipeline. `connected` means the current application calls it; `credential-ready` means the adapter is implemented and only needs its deployment secret; `catalogued` means its integration contract is recorded; `key-needed` means credentials, approval or product selection is still required.
 
 ## Architecture
 
@@ -71,7 +76,7 @@ interface PlanetarySignal {
 }
 ```
 
-See [the architecture notes](docs/architecture.md) and [adapter guide](docs/adding-an-adapter.md) for the detailed contract.
+See [the architecture notes](docs/architecture.md), [delivery roadmap](docs/roadmap.md), [provider integration runbook](docs/integration-runbook.md) and [adapter guide](docs/adding-an-adapter.md) for the detailed contract and handoff plan.
 
 ## Run locally
 
@@ -88,7 +93,7 @@ Production validation:
 npm test
 ```
 
-No API key is required for the connected first release. Authenticated providers should be added through server-side environment variables; never expose keys to the browser.
+No API key is required for the 16 connected adapters. To activate the three credential-ready integrations, copy `.env.example` to `.env.local`, supply only keys you own and keep them server-side; never expose keys to the browser.
 
 ## Routes
 

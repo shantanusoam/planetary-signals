@@ -4,7 +4,7 @@ Prefer a documented API or standard over scraping. The priority order is: API/st
 
 ## 1. Register the source
 
-Add a record to `lib/planetary/sources.ts`. Do not mark it `connected` until application code actually calls it.
+Add a record to `lib/planetary/sources.ts`. Use `credential-ready` when server code is complete but a required deployment secret is absent. Do not mark it `connected` until the deployed application actually calls it.
 
 Required decisions:
 
@@ -26,6 +26,7 @@ Create an `AdapterDefinition` in `app/api/signals/route.ts`.
 - Use a stable provider ID.
 - Preserve the provider record URL.
 - Never leak an API key in a browser request or response.
+- Declare `requiredEnv` for an authenticated event adapter so a missing key reports `unconfigured` instead of a false provider outage.
 
 ## 3. Normalize honestly
 
