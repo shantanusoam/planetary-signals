@@ -407,13 +407,14 @@ export const SOURCE_REGISTRY: SourceRegistryEntry[] = [
     provider: "UN OCHA",
     domain: "Disasters & society",
     protocol: "REST / JSON",
-    auth: "None",
+    auth: "Registration",
     cadence: "nrt",
     coverage: "Global",
     license: "ReliefWeb terms",
-    integration: "connected",
+    integration: "key-needed",
     url: "https://apidoc.reliefweb.int/",
-    description: "Curated disaster records, humanitarian reports and organizations.",
+    description:
+      "Curated disaster records, humanitarian reports and organizations. API v1 was decommissioned; v2 requires an appname approved by ReliefWeb.",
   },
   {
     id: "hdx-hapi",

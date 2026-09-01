@@ -399,41 +399,6 @@ const adapters: AdapterDefinition[] = [
     },
   },
   {
-    sourceId: "reliefweb",
-    async load() {
-      const payload = record(
-        await fetchJson(
-          "https://api.reliefweb.int/v1/disasters?appname=planetary-signals&limit=30&profile=full&preset=latest",
-        ),
-      );
-      return array(payload.data).slice(0, 20).map((item, index) => {
-        const wrapper = record(item);
-        const fields = record(wrapper.fields);
-        const date = record(fields.date);
-        const primaryCountry = record(fields.primary_country);
-        const location = record(primaryCountry.location);
-        const types = array(fields.type).map(record);
-        const status = text(fields.status, "Alert");
-        return {
-          id: `reliefweb-${text(wrapper.id, String(index))}`,
-          sourceId: "reliefweb",
-          category: "humanitarian" as const,
-          title: text(fields.name, "Humanitarian disaster record"),
-          summary: `${types.map((type) => text(type.name)).filter(Boolean).join(", ") || "Disaster"} · ${status}`,
-          observedAt: isoDate(date.created, isoDate(date.changed)),
-          place: text(primaryCountry.name, "Multiple countries"),
-          latitude: number(location.lat),
-          longitude: number(location.lon),
-          severity: status.toLowerCase().includes("alert") ? 4 : 3,
-          confidence: "verified" as const,
-          freshness: "nrt" as const,
-          sourceUrl: text(fields.url_alias, text(fields.url)),
-          metadata: { status, countries: array(fields.country).length },
-        } satisfies PlanetarySignal;
-      });
-    },
-  },
-  {
     sourceId: "nasa-cmr",
     async load() {
       const payload = record(
