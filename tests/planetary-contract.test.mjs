@@ -75,6 +75,16 @@ test("every connected source is represented by a server adapter or probe", async
   assert.doesNotMatch(signalsRoute, /datetime=PT6H/);
 });
 
+test("map basemap is keyless and keeps a local signal-layer fallback", async () => {
+  const signalMap = await readFile(
+    new URL("../components/planetary/signal-map.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(signalMap, /https:\/\/tiles\.openfreemap\.org\/styles\/dark/);
+  assert.match(signalMap, /FALLBACK_MAP_STYLE/);
+  assert.doesNotMatch(signalMap, /cartocdn\.com|API KEY REQUIRED/i);
+});
+
 test("built application serves project metadata and validates probe coordinates", async () => {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
   workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);

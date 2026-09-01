@@ -195,6 +195,9 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
 .signal-map-shell { position: absolute; overflow: hidden; background: #080d0e; inset: 0; }
 .signal-map-shell::after { position: absolute; z-index: 2; pointer-events: none; content: ""; background: linear-gradient(to bottom,rgba(8,13,14,.58),transparent 21%,transparent 75%,rgba(8,13,14,.48)), radial-gradient(circle at center,transparent 55%,rgba(3,7,8,.34)); inset: 0; }
 .signal-map { position: absolute; inset: 0; }
+.coordinate-fallback { position: absolute; z-index: 1; overflow: hidden; background-color: #080d0e; background-image: linear-gradient(rgba(169,246,199,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(169,246,199,.055) 1px,transparent 1px),radial-gradient(ellipse at center,rgba(24,45,39,.46),rgba(5,10,11,.96) 72%); background-size: 10% 16.666%,10% 16.666%,100% 100%; inset: 0; }
+.coordinate-fallback-point { position: absolute; z-index: 3; min-width: 6px; min-height: 6px; padding: 0; border: 1px solid rgba(255,255,255,.74); border-radius: 50%; cursor: pointer; transform: translate(-50%,-50%); transition: transform 160ms ease,box-shadow 160ms ease; }
+.coordinate-fallback-point:hover,.coordinate-fallback-point:focus-visible,.coordinate-fallback-point.selected { z-index: 4; border-width: 2px; box-shadow: 0 0 0 5px rgba(255,255,255,.12),0 0 22px currentColor !important; transform: translate(-50%,-50%) scale(1.65); }
 .maplibregl-canvas { filter: saturate(.74) contrast(1.06) brightness(.87) hue-rotate(4deg); }
 .maplibregl-ctrl-attrib { z-index: 5; border-radius: 5px 0 0 0; background: rgba(7,11,12,.72) !important; color: #6e7c76 !important; font-size: 8px !important; }
 .maplibregl-ctrl-attrib a { color: #82928a !important; }
@@ -202,6 +205,7 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
 .map-loading { position: absolute; z-index: 12; display: flex; align-items: center; gap: 10px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 8px; background: rgba(8,13,14,.9); color: var(--ink-2); font-family: var(--font-mono); font-size: 9px; letter-spacing: .06em; text-transform: uppercase; inset: 50% auto auto 50%; transform: translate(-50%,-50%); }
 .map-loading-orbit { position: relative; width: 16px; height: 16px; border: 1px solid rgba(169,246,199,.34); border-radius: 50%; animation: spin 1.4s linear infinite; }
 .map-loading-orbit::after { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: var(--green); content: ""; inset: -2px auto auto 5px; }
+.map-fallback-note { position: absolute; z-index: 9; top: 104px; left: 13px; max-width: min(300px,calc(100% - 80px)); padding: 7px 9px; border: 1px solid rgba(246,191,84,.28); border-radius: 7px; background: rgba(28,23,12,.88); color: #e8cf91; font-family: var(--font-mono); font-size: 8px; line-height: 1.4; backdrop-filter: blur(10px); }
 .map-crosshair { position: absolute; z-index: 3; pointer-events: none; inset: 50% auto auto 50%; opacity: .13; transform: translate(-50%,-50%); }
 .map-crosshair::before, .map-crosshair::after { position: absolute; background: var(--green); content: ""; inset: 50% auto auto 50%; transform: translate(-50%,-50%); }
 .map-crosshair::before { width: 36px; height: 1px; }
