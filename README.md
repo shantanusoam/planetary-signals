@@ -41,7 +41,7 @@ Planetary Signals turns fragmented public data into one explorable field: earthq
 | Air Quality API | Open-Meteo | AQI, particles and atmospheric chemistry |
 | Marine API | Open-Meteo | Wave and sea-surface conditions |
 | Reverse API | OpenStreetMap Nominatim | Human-readable location context |
-| Raster tiles | OpenStreetMap + CARTO | Map context and place labels |
+| Vector basemap | OpenFreeMap + OpenStreetMap/OpenMapTiles | Keyless map context and place labels |
 
 The Source Atlas additionally records high-value systems that require a key, registration, a domain-specific client or a heavier raster pipeline. `connected` means the current application calls it; `credential-ready` means the adapter is implemented and only needs its deployment secret; `catalogued` means its integration contract is recorded; `key-needed` means credentials, approval or product selection is still required.
 
