@@ -76,6 +76,19 @@ function numericValue(input: unknown) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function verticalDatumLabel(wkt: unknown): string | null {
+  const match = typeof wkt === "string" ? wkt.match(/VERTCRS\["([^"]+)"/) : null;
+  return match ? match[1] : null;
+}
+
+function elevationUnit(unit: unknown): string {
+  if (typeof unit !== "string") return "m";
+  const normalized = unit.trim().toLowerCase();
+  if (normalized === "meters" || normalized === "metres") return "m";
+  if (normalized === "feet") return "ft";
+  return unit;
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const latitude = Number(searchParams.get("lat"));
@@ -208,14 +221,19 @@ export async function GET(request: Request) {
     terrain: terrain.payload
       ? {
           elevation:
+            numericValue(terrainPayload.Elevation) ??
             numericValue(terrainPayload.elevation) ??
-            numericValue(terrainData.elevation) ??
-            numericValue(terrainPayload.value),
-          unit: value(terrainPayload.unit) ?? value(terrainData.unit) ?? "m",
-          dataset: value(terrainPayload.dataset) ?? value(terrainData.dataset) ?? "COP30",
+            numericValue(terrainData.elevation),
+          unit: elevationUnit(terrainPayload.Unit ?? terrainPayload.unit ?? terrainData.unit),
+          dataset:
+            value(terrainPayload["Reference Dataset"]) ??
+            value(terrainPayload.dataset) ??
+            value(terrainData.dataset) ??
+            "COP30",
           verticalDatum:
+            verticalDatumLabel(terrainPayload.VCRS_WKT) ??
+            value(terrainPayload.VCRS_EPSG) ??
             value(terrainPayload.verticalDatum) ??
-            value(terrainPayload.vertical_datum) ??
             value(terrainData.verticalDatum),
         }
       : null,

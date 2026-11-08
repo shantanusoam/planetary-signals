@@ -8,9 +8,37 @@ import { Crosshair, LocateFixed, Minus, Plus } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { CATEGORY_META, type PlanetarySignal, type SignalCategory } from "@/lib/planetary/types";
 
-// OpenFreeMap's public styles are keyless. If the external style cannot load, the
-// local fallback still renders the live signal layer instead of blocking the map.
-const MAP_STYLE = "https://tiles.openfreemap.org/styles/dark";
+// The prior CARTO raster basemap now silently requires an API key (it serves
+// a watermarked placeholder with HTTP 200 instead of failing outright). Esri's
+// Dark Gray Canvas base+reference tiles remain genuinely free and keyless, so
+// the base map uses those instead. If the tiles cannot load, the fallback
+// below still renders the live signal layer instead of blocking the map.
+const MAP_STYLE: StyleSpecification = {
+  version: 8,
+  glyphs: "https://fonts.openmaptiles.org/{fontstack}/{range}.pbf",
+  sources: {
+    "esri-dark-base": {
+      type: "raster",
+      tiles: [
+        "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+      ],
+      tileSize: 256,
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Esri, HERE, Garmin',
+    },
+    "esri-dark-labels": {
+      type: "raster",
+      tiles: [
+        "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}",
+      ],
+      tileSize: 256,
+    },
+  },
+  layers: [
+    { id: "esri-dark-base", type: "raster", source: "esri-dark-base" },
+    { id: "esri-dark-labels", type: "raster", source: "esri-dark-labels" },
+  ],
+};
 
 const FALLBACK_MAP_STYLE: StyleSpecification = {
   version: 8,

@@ -52,7 +52,7 @@ function compact(value: string, max = 220) {
 
 async function fetchJson(
   url: string,
-  timeoutMs = 5_500,
+  timeoutMs = 8_000,
   headers: HeadersInit = {},
 ): Promise<unknown> {
   const controller = new AbortController();
@@ -69,7 +69,7 @@ async function fetchJson(
   }
 }
 
-async function fetchText(url: string, timeoutMs = 5_500): Promise<string> {
+async function fetchText(url: string, timeoutMs = 8_000): Promise<string> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {

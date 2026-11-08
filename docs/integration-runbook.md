@@ -12,7 +12,7 @@ This is the handoff document for an implementation agent or project owner. It co
 | eBird | Adapter implemented; `unconfigured` without a key | Owner creates a key and adds `EBIRD_API_KEY` |
 | OpenTopography | Point-probe adapter implemented; `unconfigured` without a key | Owner creates a key and adds `OPENTOPOGRAPHY_API_KEY` |
 | NASA DONKI | Connected through the public CCMC DONKI service | Monitor the interface; no key required for this adapter |
-| ReliefWeb | Existing live adapter | No integration work; retain attribution and filters |
+| ReliefWeb | API v1 was decommissioned (`410 Gone`); adapter removed and registry demoted to `key-needed` (2026-09-01) | Owner requests an appname approved by ReliefWeb, then re-implement against v2 |
 
 Real credentials must go in `.env.local` for local work and in the deployment secret manager for production. Never paste them into source, issues, pull requests, screenshots, client-side JavaScript or build logs.
 
@@ -110,7 +110,7 @@ Acceptance: flare classes and times match DONKI, links open the original record 
 | Copernicus Atmosphere Data Store (`cams`) | Register, accept CAMS dataset terms and create required credentials | Scheduled `batch` plus raster serving; never request large model cubes from an interactive route | One forecast product with run time, valid time, lead time and level; no measurement language; COG/Zarr output and freshness monitor |
 | Motus Wildlife Tracking (`motus`) | Create account, request project/data access and obtain written permission for intended display | Restricted `batch`; aggregate or generalize before public serving | Study permission recorded; sensitive station/animal locations reviewed; delay/generalization policy tested; revoke path documented |
 | MOSDAC (`mosdac`) | Register with the official portal and request access to the chosen satellite products | Scheduled `batch` or catalog job; use documented download/service interfaces only | One named product, region and cadence; licence/attribution captured; token refresh handled; no browser automation or session-cookie scraping |
-| ReliefWeb (`reliefweb`) | None for the current public adapter | Existing bounded `event` adapter | Keep query filters bounded, link every disaster record and monitor API policy changes; do not duplicate the integration |
+| ReliefWeb (`reliefweb`) | Request an appname approved by ReliefWeb for API v2 (v1 is decommissioned; an unapproved appname gets `403`) | New bounded `event` adapter against `api.reliefweb.int/v2` | Keep query filters bounded, link every disaster record and monitor API policy changes; do not duplicate the integration |
 
 For CDS and CAMS, the first pull request should be a tiny vertical slice, not “all climate data.” Choose one variable, geographic extent, temporal cadence and retention rule. Large multidimensional downloads need cost and quota controls before expansion.
 

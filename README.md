@@ -32,7 +32,6 @@ Planetary Signals turns fragmented public data into one explorable field: earthq
 | GOES X-ray JSON | NOAA SWPC | Near-live solar X-ray flux |
 | DONKI web service | NASA CCMC | Recent solar flares and active regions |
 | Close Approach API | NASA JPL CNEOS | Predicted near-Earth object approaches |
-| Disasters API | UN OCHA ReliefWeb | Curated humanitarian disaster records |
 | Common Metadata Repository | NASA Earthdata | Recently updated Earth science collections |
 | Works API | OpenAlex | Recent planetary and climate research |
 | Indicators API | World Bank | Global development context |
@@ -41,7 +40,7 @@ Planetary Signals turns fragmented public data into one explorable field: earthq
 | Air Quality API | Open-Meteo | AQI, particles and atmospheric chemistry |
 | Marine API | Open-Meteo | Wave and sea-surface conditions |
 | Reverse API | OpenStreetMap Nominatim | Human-readable location context |
-| Vector basemap | OpenFreeMap + OpenStreetMap/OpenMapTiles | Keyless map context and place labels |
+| Raster tiles | OpenStreetMap + Esri | Map context and place labels |
 
 The Source Atlas additionally records high-value systems that require a key, registration, a domain-specific client or a heavier raster pipeline. `connected` means the current application calls it; `credential-ready` means the adapter is implemented and only needs its deployment secret; `catalogued` means its integration contract is recorded; `key-needed` means credentials, approval or product selection is still required.
 

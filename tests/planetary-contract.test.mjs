@@ -80,7 +80,7 @@ test("map basemap is keyless and keeps a local signal-layer fallback", async () 
     new URL("../components/planetary/signal-map.tsx", import.meta.url),
     "utf8",
   );
-  assert.match(signalMap, /https:\/\/tiles\.openfreemap\.org\/styles\/dark/);
+  assert.match(signalMap, /server\.arcgisonline\.com\/ArcGIS\/rest\/services\/Canvas\/World_Dark_Gray_Base/);
   assert.match(signalMap, /FALLBACK_MAP_STYLE/);
   assert.doesNotMatch(signalMap, /cartocdn\.com|API KEY REQUIRED/i);
 });
